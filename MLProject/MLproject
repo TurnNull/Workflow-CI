@@ -1,0 +1,19 @@
+name: plantvillage-image-classification
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      data_dir: {type: str, default: "PlantVillage_preprocessing"}
+      epochs: {type: int, default: 1}
+      batch_size: {type: int, default: 16}
+      image_size: {type: int, default: 160}
+      learning_rate: {type: float, default: 0.001}
+    command: >
+      python modelling.py
+      --data_dir {data_dir}
+      --epochs {epochs}
+      --batch_size {batch_size}
+      --image_size {image_size}
+      --learning_rate {learning_rate}

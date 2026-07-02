@@ -1,0 +1,10 @@
+- name: Run MLflow Project
+  run: |
+    mlflow run MLProject \
+      --env-manager=local \
+      --experiment-name PlantVillage_CI_Training \
+      -P data_dir=PlantVillage_preprocessing \
+      -P epochs=3 \
+      -P batch_size=16 \
+      -P image_size=160 \
+      -P learning_rate=0.001
