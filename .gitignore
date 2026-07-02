@@ -1,4 +1,12 @@
-mlruns/
 MLProject/PlantVillage_preprocessing/*
 !MLProject/PlantVillage_preprocessing/dataset_metadata.json
 !MLProject/PlantVillage_preprocessing/labels.txt
+MLProject/mlruns/
+MLProject/outputs/
+MLProject/training_artifacts/
+mlruns/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+.venv/
