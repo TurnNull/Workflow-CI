@@ -1,10 +1,76 @@
-- name: Run MLflow Project
-  run: |
-    mlflow run MLProject \
-      --env-manager=local \
-      --experiment-name PlantVillage_CI_Training \
-      -P data_dir=PlantVillage_preprocessing \
-      -P epochs=3 \
-      -P batch_size=16 \
-      -P image_size=160 \
-      -P learning_rate=0.001
+name: MLflow CI Training and Docker Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  train-build-push:
+    runs-on: ubuntu-latest
+
+    env:
+      MLFLOW_TRACKING_URI: file:${{ github.workspace }}/MLProject/mlruns
+      DOCKER_IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/plantvillage-mlflow-ci:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12.7
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.7"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r MLProject/requirements.txt
+
+      - name: Run MLflow Project
+        run: |
+          mlflow run MLProject \
+            --env-manager=local \
+            --experiment-name PlantVillage_CI_Training \
+            -P data_dir=PlantVillage_preprocessing \
+            -P epochs=3 \
+            -P batch_size=16 \
+            -P image_size=160 \
+            -P learning_rate=0.001
+
+      - name: Show MLflow run information
+        run: |
+          echo "Run ID:"
+          cat MLProject/outputs/run_id.txt
+          echo ""
+          echo "Model URI:"
+          cat MLProject/outputs/model_uri.txt
+
+      - name: Upload MLflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-training-artifacts
+          path: |
+            MLProject/mlruns
+            MLProject/outputs
+            MLProject/training_artifacts
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image with MLflow
+        run: |
+          RUN_ID=$(cat MLProject/outputs/run_id.txt)
+          echo "Building Docker image for run: ${RUN_ID}"
+
+          mlflow models build-docker \
+            -m "runs:/${RUN_ID}/model" \
+            -n "${DOCKER_IMAGE_NAME}"
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push "${DOCKER_IMAGE_NAME}"

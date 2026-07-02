@@ -1,0 +1,8 @@
+Docker Hub Image:
+https://hub.docker.com/r/turnnull/plantvillage-mlflow-ci
+
+Pull command:
+docker pull turnnull/plantvillage-mlflow-ci:latest
+
+Run command:
+docker run -p 5001:8080 turnnull/plantvillage-mlflow-ci:latest
